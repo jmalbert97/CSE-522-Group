@@ -16,9 +16,9 @@
 typedef enum {
   CALIBRATE = 0,
   RUN = 1
-} mode_t;
+} _mode_t;
 
-mode_t mode = CALIBRATE;
+_mode_t mode = CALIBRATE;
 
 char * mode_temp = " "; 
 module_param(mode_temp, charp, 0644); 

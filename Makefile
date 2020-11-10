@@ -1,7 +1,7 @@
 # TODO: Change this to the location of your kernel source code
-KERNEL_SOURCE=/project/scratch01/compile/jmalbert/linux_source/linux
+KERNEL_SOURCE=/home/warehouse/ceneblock/compile/linux_source/linux
 
-EXTRA_CFLAGS += -DMODULE=1 -D__KERNEL__=1
+EXTRA_CFLAGS += -DMODULE=1 -D__KERNEL__=1 -Werror
 
 kernel_memory-objs := $(kernel_memory-y)
 obj-m := kernel_memory.o
