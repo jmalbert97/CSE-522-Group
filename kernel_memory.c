@@ -13,7 +13,13 @@
 #include "header.h"
 #include <asm/uaccess.h>
 
-char * mode = "calibrate"; 
+typedef enum {
+  CALIBRATE = 0,
+  RUN = 1
+} mode_t;
+
+mode_t mode = CALIBRATE;
+
 char * mode_temp = " "; 
 module_param(mode_temp, charp, 0644); 
 
@@ -36,9 +42,9 @@ kernel_memory_init(void)
 {
     //2. check param for "run" value => set global mode var
     if(strcmp(mode_temp, "run") == 0){
-        mode = "run"; 
+        mode = RUN;
     }
-    printk(KERN_INFO "Loaded kernel_memory module in (%s) mode\n", mode);
+    printk(KERN_INFO "Loaded kernel_memory module in (%s) mode\n", (mode == RUN) ? "run" : "calibrate");
 
     kthread = kthread_create(thread_fn, NULL, "k_memory");
     if (IS_ERR(kthread)) {
