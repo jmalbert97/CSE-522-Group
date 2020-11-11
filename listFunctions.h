@@ -13,7 +13,7 @@ void newTask(_task_t *taskList);
 
 _task_t *initTask(unsigned long period_ms, unsigned int task_num, unsigned int num_subtasks);
 
-_subtask_t* initSubtask(uint8_t firstRun);
+_subtask_t *initSubtask(int execution_time, int sub_task_num, int parent_index, uint8_t firstRun);
 
 void delTask(_task_t parentTask);
 

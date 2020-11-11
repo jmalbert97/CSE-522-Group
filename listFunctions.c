@@ -2,9 +2,13 @@
 
 #include <linux/slab.h>
 
-_subtask_t *initSubtask(uint8_t firstRun)
+_subtask_t *initSubtask(int execution_time, int sub_task_num, int parent_index, uint8_t firstRun)
 {
   _subtask_t *newSubtask = kmalloc(sizeof(_subtask_t), GFP_KERNEL);
+
+  newSubtask->execution_time = execution_time;
+  newSubtask->sub_task_num = sub_task_num;
+  newSubtask->parent_index = parent_index;
 
   //memset(&newSubtask, 0, sizeof(_subtask_t));
   if(firstRun)
@@ -23,13 +27,11 @@ _task_t *initTask(unsigned long period_ms, unsigned int task_num, unsigned int n
 
   _task_t *newTask = kmalloc(sizeof(_task_t), GFP_KERNEL);
 
-  //memset(newTask, 0, sizeof(_task_t));
-
   newTask->period_ms = period_ms;
   newTask->task_num = task_num;
   newTask->num_subtasks = num_subtasks;
 
-  newTask->subtasks = initSubtask(1);
+  newTask->subtasks = initSubtask(0,0,task_num,1);
 
   return newTask;
 }
@@ -44,13 +46,6 @@ void newTask(_task_t *taskList)
 }
 
 //size chosen arbitrarily until else is specified
-
-//CEN: we should probably use a list_head instead of a static array...it's
-//standard and allows for dynamic insertation\removal. <linux/list.h>
-//_task_t tasks[2] = {{.period_ms = 1000, .task_num = 0, .num_sub_tasks = 2, .exec_time_ms = 0}, {.period_ms = 1000, .task_num = 1, .num_sub_tasks = 2, .exec_time_ms = 2}}; 
-
-//_subtask_t sub_tasks[4] = {{100, 0, 0}, {100, 1, 0}, {100, 0, 1}, {100, 1, 1}} ; 
-
 
 void delSubtask(_subtask_t *parentSubtask)
 {
