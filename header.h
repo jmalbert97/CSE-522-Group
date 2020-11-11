@@ -7,10 +7,14 @@ Nuances:
 .................
 */
 
+#ifndef _HEADER_H
+#define _HEADER_H
+
 #include <linux/hrtimer.h>
 #include <linux/ktime.h>
 #include <linux/list.h>
 #include <linux/cpumask.h>
+#include <linux/sched.h>
 
 #define NUM_CORES num_online_cpus()
 
@@ -38,52 +42,16 @@ struct Task{
   //CEN: should probably use a uint32 or something instead of long...
   unsigned long period_ms;
   unsigned int task_num; 
-  unsigned int num_sub_tasks;  //hmmm...may not need. TODO: check API to see if there is a fast way to get the number of subtasks
+  unsigned int num_subtasks;  //hmmm...may not need. TODO: check API to see if there is a fast way to get the number of subtasks
   unsigned long exec_time_ms; 
 
   uint8_t firstRun;
-  _subtask_t subtasks;
+  _subtask_t *subtasks;
+  
+  struct list_head sibling;
 };
 
-
-_subtask_t initSubtask(int execution_time, int sub_task_num, int parent_index, int firstRun)
-{
-  _subtask_t newSubtask;
-
-  if(firstRun)
-  {
-    INIT_LIST_HEAD(&newSubtask.sibling);
-  }
-  //if we have already created the link list, then we'll add it in initTask
-  
-  newSubtask.execution_time = execution_time;
-  newSubtask.sub_task_num = sub_task_num;
-  newSubtask.parent_index = parent_index;
-
-  hrtimer_init(&newSubtask.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-
-  //The other variables should be set at time of running
-  
-  return newSubtask;
-}
-
-_task_t initTask(unsigned long period_ms, unsigned int task_num, unsigned int num_subtasks, unsigned long exec_time_ms)
-{
-
-  _task_t newTask = { .period_ms = period_ms, .task_num = task_num, .num_sub_tasks = num_subtasks, .exec_time_ms = exec_time_ms, .firstRun = 1};
-
-  newTask.subtasks = initSubtask(exec_time_ms,0,task_num,1);
-
-  return newTask;
-}
-
-//size chosen arbitrarily until else is specified
-
-//CEN: we should probably use a list_head instead of a static array...it's
-//standard and allows for dynamic insertation\removal. <linux/list.h>
-_task_t tasks[2] = {{.period_ms = 1000, .task_num = 0, .num_sub_tasks = 2, .exec_time_ms = 0}, {.period_ms = 1000, .task_num = 1, .num_sub_tasks = 2, .exec_time_ms = 2}}; 
-
-//_subtask_t sub_tasks[4] = {{100, 0, 0}, {100, 1, 0}, {100, 0, 1}, {100, 1, 1}} ; 
+static _task_t *taskStruct;
 
 /*
 
@@ -123,3 +91,6 @@ for(unsigned int i = 0; i < sizeof(tasks)/sizeof(tasks[0]); i++){
     }
 }
 */
+
+
+#endif

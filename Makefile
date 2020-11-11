@@ -1,10 +1,10 @@
 # TODO: Change this to the location of your kernel source code
 KERNEL_SOURCE=/home/warehouse/ceneblock/compile/linux_source/linux
 
-EXTRA_CFLAGS += -DMODULE=1 -D__KERNEL__=1 -Werror
+EXTRA_CFLAGS += -DMODULE=1 -D__KERNEL__=1
 
-kernel_memory-objs := $(kernel_memory-y)
-obj-m := kernel_memory.o
+obj-m := lab.o
+lab-objs := kernel_memory.o listFunctions.o 
 
 PHONY: all
 

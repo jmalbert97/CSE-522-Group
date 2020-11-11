@@ -10,8 +10,16 @@
 #include <linux/time.h>
 #include <linux/kthread.h>
 #include <linux/mm.h>
-#include "header.h"
 #include <asm/uaccess.h>
+
+//compile with -DX=1
+#ifdef X
+#include "otherHeader.h"
+#else
+#include "header.h"
+#endif
+
+#include "listFunctions.h"
 
 typedef enum {
   CALIBRATE = 0,
@@ -46,6 +54,10 @@ kernel_memory_init(void)
     }
     printk(KERN_INFO "Loaded kernel_memory module in (%s) mode\n", (mode == RUN) ? "run" : "calibrate");
 
+    taskStruct = kmalloc(sizeof(_task_t), GFP_KERNEL);
+
+    taskStruct = initTask(0,0,0);
+
     kthread = kthread_create(thread_fn, NULL, "k_memory");
     if (IS_ERR(kthread)) {
         printk(KERN_ERR "Failed to create kernel thread\n");
@@ -61,7 +73,10 @@ static void
 kernel_memory_exit(void)
 {
     kthread_stop(kthread);
+    delTask(*taskStruct);
+    kfree(taskStruct);
     printk(KERN_INFO "Unloaded kernel_memory module\n");
+
 }
 
 module_init(kernel_memory_init);
