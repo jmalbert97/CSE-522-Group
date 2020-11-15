@@ -12,7 +12,7 @@
  * @brief creates a new task and adds it to the siblings of tasks
  * @param taskList the head of the all the tasks
  */
-void newTask(_task_t *taskList);
+_task_t * newTask(_task_t *taskList, unsigned long period_ms, unsigned int task_num, unsigned int num_subtasks);
 
 /**
  * @brief creates and initializes a new task and subtask.
@@ -32,7 +32,7 @@ _task_t *initTask(unsigned long period_ms, unsigned int task_num, unsigned int n
  * list
  * @return a new subtask
  */
-_subtask_t *initSubtask(int execution_time, int sub_task_num, int parent_index, uint8_t firstRun);
+_subtask_t *initSubtask(_task_t *taskStruct, int execution_time, int sub_task_num, int parent_index, uint8_t firstRun);
 
 /**
  * @brief deletes all of the tasks and subtasks
@@ -46,5 +46,8 @@ void delTask(_task_t parentTask);
  */
 void delSubtask(_subtask_t *parentSubtask);
 
+void setParams(_task_t *taskStruct);
+
+void determineCore(_task_t *taskStruct_temp[]); 
 
 #endif

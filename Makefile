@@ -1,5 +1,5 @@
 # TODO: Change this to the location of your kernel source code
-KERNEL_SOURCE=/home/warehouse/ceneblock/compile/linux_source/linux
+KERNEL_SOURCE=/home/warehouse/jmalbert/compile/linux_source/linux
 
 EXTRA_CFLAGS += -DMODULE=1 -D__KERNEL__=1
 
@@ -13,3 +13,4 @@ all:
 
 clean:
 	$(MAKE) -C $(KERNEL_SOURCE) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- M=$(PWD) clean 
+	
