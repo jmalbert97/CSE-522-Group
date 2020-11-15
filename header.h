@@ -54,6 +54,7 @@ struct Task{
 
 static _task_t *taskStruct;
 
+
 //CEN: we should probably use a list_head instead of a static array...it's
 //standard and allows for dynamic insertation\removal. <linux/list.h>
 _task_t tasks[2] = {{.period_ms = 1000, .task_num = 0, .num_sub_tasks = 2}, {.period_ms = 1000, .task_num = 1, .num_sub_tasks = 2}}; 
