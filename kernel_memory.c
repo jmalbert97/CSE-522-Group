@@ -46,6 +46,14 @@ thread_fn(void * data)
     return 0;
 }
 
+static void subtask_func(_subtask_t * subtask_temp){
+    unsigned int i; 
+    for(i = 0; i < subtask_temp->loop_iterations_count; i++){
+        ktime_get(); 
+    }
+}
+
+
 static int
 kernel_memory_init(void)
 {
