@@ -49,15 +49,28 @@ thread_fn(void * data)
 static int
 kernel_memory_init(void)
 {
+    unsigned int i; 
+    unsigned int j; 
+
     //2. check param for "run" value => set global mode var
     if(strcmp(mode_temp, "run") == 0){
         mode = RUN;
     }
     printk(KERN_INFO "Loaded kernel_memory module in (%s) mode\n", (mode == RUN) ? "run" : "calibrate");
 
-    taskStruct = kmalloc(sizeof(_task_t), GFP_KERNEL);
+    //initialize tasks
+    for(i = 0; i < NUM_TASKS; i++){
+        taskStruct[i] = kmalloc(sizeof(_task_t), GFP_KERNEL);
+        taskStruct[i] = initTask((i+1)*100,i,NUM_SUBTASKS);
+        //initialize subtasks
+        for(j = 0; j < NUM_SUBTASKS; j++){
+            initSubtask(taskStruct[i], (j+1)*10, j, 0, 0); 
+        }
+        setParams(taskStruct[i]);
+        printk(KERN_INFO "Tasks Stuff: exec time: (%lu)\n", taskStruct[i]->exec_time_ms);
+    }
 
-    taskStruct = initTask(0,0,0);
+    determineCore(taskStruct); 
 
     kthread = kthread_create(thread_fn, NULL, "k_memory");
     if (IS_ERR(kthread)) {
@@ -73,9 +86,12 @@ kernel_memory_init(void)
 static void 
 kernel_memory_exit(void)
 {
+    unsigned int i; 
     kthread_stop(kthread);
-    delTask(*taskStruct);
-    kfree(taskStruct);
+    //delTask(*taskStruct);
+    for(i = 0; i < NUM_TASKS; i++){
+        kfree(taskStruct[i]);
+    }
     printk(KERN_INFO "Unloaded kernel_memory module\n");
 
 }
