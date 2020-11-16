@@ -7,14 +7,17 @@ Nuances:
 .................
 */
 
+#ifndef _HEADER_H
+#define _HEADER_H
+
 #include <linux/hrtimer.h>
 #include <linux/ktime.h>
 #include <linux/list.h>
 #include <linux/cpumask.h>
 
+#include <linux/sched.h>
+
 #define NUM_CORES num_online_cpus()
-//array to keep track of core utilization 
-static double core_util_tracker[NUM_CORES]; 
 
 typedef struct Task _task_t;
 typedef struct Sub_task _subtask_t;
@@ -26,12 +29,11 @@ struct Sub_task{
 
   //4. added params 
   struct hrtimer timer;
-  struct task_struct * task; 
+  struct task_struct task; 
   ktime_t last_release_time; 
   int loop_iterations_count; 
   int cumulative_exec_time;
   double utilization; //I know we have an FPU in the pi, but apparently it's expensive to use 
-  double relative_deadline; 
   unsigned int core; //cpumask.h
 
   struct list_head sibling;
@@ -41,44 +43,16 @@ struct Task{
   //CEN: should probably use a uint32 or something instead of long...
   unsigned long period_ms;
   unsigned int task_num; 
-  unsigned int num_sub_tasks;  //hmmm...may not need. TODO: check API to see if there is a fast way to get the number of subtasks
+  unsigned int num_subtasks;  //hmmm...may not need. TODO: check API to see if there is a fast way to get the number of subtasks
   unsigned long exec_time_ms; 
 
   uint8_t firstRun;
-  _subtask_t subtasks;
+  _subtask_t *subtasks;
+  
+  struct list_head sibling;
 };
 
-
-_subtask_t initSubtask(int execution_time, int sub_task_num, int parent_index, int firstRun)
-{
-  _subtask_t newSubtask;
-
-  if(firstRun)
-  {
-    INIT_LIST_HEAD(&newSubtask.sibling);
-  }
-  //if we have already created the link list, then we'll add it in initTask
-  
-  newSubtask.execution_time = execution_time;
-  newSubtask.sub_task_num = sub_task_num;
-  newSubtask.parent_index = parent_index;
-
-  hrtimer_init(&newSubtask.timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-
-  //The other variables should be set at time of running
-  
-  return newSubtask;
-}
-
-_task_t initTask(unsigned long period_ms, unsigned int task_num, unsigned int num_subtasks)
-{
-
-  _task_t newTask = { .period_ms = period_ms, .task_num = task_num, .num_sub_tasks = num_subtasks, .firstRun = 1};
-
-  newTask.subtasks = initSubtask(exec_time_ms,0,task_num,1);
-
-  return newTask;
-}
+static _task_t *taskStruct;
 
 //size chosen arbitrarily until else is specified
 
@@ -136,4 +110,4 @@ for(unsigned int i = 0; i < sizeof(tasks)/sizeof(tasks[0]); i++){
     }
 }
 
-
+#endif
