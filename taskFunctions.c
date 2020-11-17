@@ -41,6 +41,7 @@ static int64_t suntask_func_calibrate(_subtask_t *subtaskTemp)  __attribute__ ((
   preempt_disable(); //don't preempt me
   ktime_t startTime = ktime_get();
   for(i = 0; i < 1; i++)
+  {
       ktime_get(); 
   }
   ktime_t endTime = ktime_get();

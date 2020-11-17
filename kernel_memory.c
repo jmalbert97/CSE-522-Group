@@ -44,6 +44,7 @@ void calibrateThreads(void)
   for(x = 0; x < NUM_CORES; x++)
   {
     calibrateThreads[x] = kthread_create(calibrate_thread, coreArraySubtasks[x], "calibrate_task");
+    kthread_bind(calibrateThreads[x], x);
     wake_up_process(calibrateThreads[x]);
   }
 
