@@ -11,7 +11,7 @@ _subtask_t *initSubtask(_task_t *parentTask, int execution_time, int sub_task_nu
   newSubtask->parent_index = parent_index;
   newSubtask->last_release_time = 0; 
   newSubtask->loop_iterations_count = 9804; 
-  //memset(&newSubtask, 0, sizeof(_subtask_t));
+  newSubtask->inUse = 1;
   if(firstRun)
   {
     INIT_LIST_HEAD(&newSubtask->sibling);
@@ -120,50 +120,74 @@ void selectionSortUtil(_subtask_t *arr[])
 //helper functions for determineCore
 void selectionSortCore(_subtask_t *arr[])  
 {  
-    int i, j;   
-    _subtask_t *temp;
-    int priority_index = 0; 
+  int i, j, k;
+  _subtask_t *temp;
+  int priority_index = 0; 
 
-    // sort ascending by core   
-    for (i = 0; i < NUM_TASKS*NUM_SUBTASKS-1; i++)  
-    {  
-        for (j = i+1; j < NUM_TASKS*NUM_SUBTASKS; j++){
-          //sort by ascending core 
-          if (arr[i]->core > arr[j]->core){
-            temp = arr[i];
-            arr[i] = arr[j];
-            arr[j] = temp; 
-          }  
-        }
-    }
+  // sort ascending by core   
+  for (i = 0; i < NUM_TASKS*NUM_SUBTASKS-1; i++)  
+  {  
+      for (j = i+1; j < NUM_TASKS*NUM_SUBTASKS; j++){
+        //sort by ascending core 
+        if (arr[i]->core > arr[j]->core){
+          temp = arr[i];
+          arr[i] = arr[j];
+          arr[j] = temp; 
+        }  
+      }
+  }
 
   //sort descending by relative deadline for each core 
   for (i = 0; i < NUM_TASKS*NUM_SUBTASKS-1; i++)
   {  
-        for (j = i+1; j < NUM_TASKS*NUM_SUBTASKS; j++){
-          //sort by relatvie deadlines on same core 
-          if ((arr[i]->relative_deadline < arr[j]->relative_deadline) && (arr[i]->core == arr[j]->core)){
-            temp = arr[i];
-            arr[i] = arr[j];
-            arr[j] = temp; 
-          } 
-        }
+    for (j = i+1; j < NUM_TASKS*NUM_SUBTASKS; j++){
+      //sort by relatvie deadlines on same core 
+      if ((arr[i]->relative_deadline < arr[j]->relative_deadline) && (arr[i]->core == arr[j]->core)){
+        temp = arr[i];
+        arr[i] = arr[j];
+        arr[j] = temp; 
+      } 
+    }
   }
 
-    //if both subtasks on same core, give first (higher rel deadline) a lower priority 
-    for(i = 0; i < NUM_SUBTASKS*NUM_TASKS-1; i++){
-      if(arr[i]->core == arr[i+1]->core){
-        arr[i]->priority = priority_index; 
-        priority_index++; 
-      }else{
-        arr[i]->priority = priority_index; 
-        priority_index=0; 
-      }
-      if(i == NUM_SUBTASKS*NUM_TASKS-2){
-        arr[i+1]->priority = priority_index;
-      }
+  //if both subtasks on same core, give first (higher rel deadline) a lower priority 
+  for(i = 0; i < NUM_SUBTASKS*NUM_TASKS-1; i++){
+    if(arr[i]->core == arr[i+1]->core){
+      arr[i]->priority = priority_index; 
+      priority_index++; 
+    }else{
+      arr[i]->priority = priority_index; 
+      priority_index=0; 
     }
-  
+    if(i == NUM_SUBTASKS*NUM_TASKS-2){
+      arr[i+1]->priority = priority_index;
+    }
+  }
+
+  //At this point the tasks should be sorted, so when I see if there a
+  //core number > current->core that means time to increment arrays
+  j = 0;
+  k = 0;
+  for(i = 0; i < NUM_SUBTASKS * NUM_TASKS; i++)
+  {
+ 
+    arr[i]->inUse = 1;
+    if(i == 0)
+    {
+      coreArraySubtasks[j][k] = arr[i];
+    }
+    else if(coreArraySubtasks[j][k - 1]->core < arr[i]->core)
+    {
+      k = 0;
+      j++
+      coreArraySubtasks[j][k] = arr[i];
+    }
+    else
+    {
+      k++;
+      coreArraySubtasks[j][k] = arr[i];
+    }
+  }
 }  
 
 
