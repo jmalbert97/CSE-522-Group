@@ -42,7 +42,8 @@ void calibrateThreads(void)
   struct task_struct **calibrateThreads;
   calibrateThreads = kmalloc(sizeof(struct task_struct) * NUM_CORES, GFP_KERNEL);
   p.sched_priority = 99; 
-  
+  printk("in the calibrate func.. \n"); 
+
   for(x = 0; x < NUM_CORES; x++)
   {
     printk("Core (%u) task struct created.. \n", x); 
@@ -70,6 +71,7 @@ thread_fn(void * data)
       case RUN:
         break;
       case CALIBRATE:
+        printk("calibrating the threads ...\n"); 
         calibrateThreads();
         break;
       default:
@@ -106,17 +108,10 @@ kernel_memory_init(void)
         setParams(taskStruct[i]);
         printk(KERN_INFO "Tasks Stuff: exec time: (%lu)\n", taskStruct[i]->exec_time_ms);
     }
-    
-    //make our array of core-bound subtasks    
-    // coreArraySubtasks = (_subtask_t***)kmalloc(sizeof(** struct _subtask_t) * NUM_CORES, GFP_KERNEL);
-
-    // for(i = 0; i < NUM_CORES; i++)
-    // {
-    //   coreArraySubtasks[i] =  (_subtask_t**)kmalloc(sizeof( struct _subtask_t *) * NUM_TASKS * NUM_SUBTASKS, GFP_KERNEL);
-    //   //memset(coreArraySubtasks[i], 0,  NUM_TASKS * NUM_SUBTASKS); //zero it out.
-    // }
 
     determineCore(taskStruct); 
+    //THIS CAUSES A SEG FAULT BUT I HAVE NO CLUE WHY... 
+    //printk("first element for core.. loop its (%u)\n", coreArraySubtasks[0][0]->loop_iterations_count); 
 
     kthread = kthread_create(thread_fn, NULL, "k_memory");
     if (IS_ERR(kthread)) {
@@ -140,7 +135,7 @@ kernel_memory_exit(void)
     }
     for(i = 0; i < NUM_CORES; i++)
     {
-      kfree(coreArraySubtasks[i]);
+      //kfree(coreArraySubtasks[i]);
     }
     //kfree(coreArraySubtasks);
     

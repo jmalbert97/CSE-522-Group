@@ -248,8 +248,9 @@ void determineCore(_task_t *taskStruct_temp[]){
       printk("subtask: (%u) with relative deadline (%lu) assigned priority (%u) on core (%u)\n", j, sorted_arr[j]->relative_deadline, sorted_arr[j]->priority.sched_priority, sorted_arr[j]->core);
 
     }
-
+  
     printk("Cores have been assigned ...\n"); 
+    printk("first element for core.. loop its (%u)\n", coreArraySubtasks[0][0]->loop_iterations_count); 
 
 }
 

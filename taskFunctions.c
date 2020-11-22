@@ -57,29 +57,30 @@ void get_itterations(_subtask_t subtaskTemp){
 
 int calibrate_thread(void *threadData)
 {
-  unsigned int x = 0;
+  // unsigned int x = 0;
   _subtask_t *coreSubtasks = (_subtask_t *)threadData;
   printk("Calibrating thread ..\n"); 
+  printk("loop its (%u)\n", coreSubtasks[0].loop_iterations_count); 
 
-  set_current_state(TASK_INTERRUPTIBLE);  
-  schedule();
+  //set_current_state(TASK_INTERRUPTIBLE);  
+  //schedule();
   
-  printk("state is set ..\n"); 
-  printk("task is scheduled ..\n"); 
+  // printk("state is set ..\n"); 
+  // printk("task is scheduled ..\n"); 
 
-  while(coreSubtasks[x].inUse == 1)
-  {
-    //Set each subtasks's priority
-    sched_setscheduler(&(coreSubtasks[x].task), SCHED_FIFO, &(coreSubtasks[x].priority));
+  // while(coreSubtasks[x].inUse == 1)
+  // {
+  //   //Set each subtasks's priority
+  //   sched_setscheduler(&(coreSubtasks[x].task), SCHED_FIFO, &(coreSubtasks[x].priority));
 
-    get_itterations(coreSubtasks[x]);
+  //   get_itterations(coreSubtasks[x]);
 
-    printk("Task: %u Subtask: %u Itterations needed: %u to meet execution time of: %lu \n", coreSubtasks[x].parent_index, coreSubtasks[x].sub_task_num, coreSubtasks[x].loop_iterations_count, coreSubtasks[x].execution_time);
+  //   printk("Task: %u Subtask: %u Itterations needed: %u to meet execution time of: %lu \n", coreSubtasks[x].parent_index, coreSubtasks[x].sub_task_num, coreSubtasks[x].loop_iterations_count, coreSubtasks[x].execution_time);
 
-    x++;
-  }
+  //   x++;
+  // }
 
-  printk("Calibration finished .. \n"); 
+  // printk("Calibration finished .. \n"); 
 
   return 0;
 }
