@@ -26,8 +26,8 @@ typedef struct Sub_task _subtask_t;
 struct Sub_task{
   unsigned long execution_time; 
   unsigned long relative_deadline; 
-  int sub_task_num; 
-  int parent_index; 
+  unsigned int sub_task_num; 
+  unsigned int parent_index; 
 
   //4. added params 
   struct hrtimer timer;
@@ -37,7 +37,9 @@ struct Sub_task{
   unsigned int cumulative_exec_time;
   unsigned int utilization; //I know we have an FPU in the pi, but apparently it's expensive to use 
   unsigned int core; //cpumask.h
-  unsigned int priority; 
+ 
+  unsigned int inUse; //set to 1 if this is a valid task.
+  struct sched_param *priority;
 
   struct list_head sibling;
 };
@@ -57,6 +59,7 @@ struct Task{
 
 static _task_t *taskStruct[NUM_TASKS];
 
+_subtask_t **coreArraySubtasks;
 
 
  #endif
