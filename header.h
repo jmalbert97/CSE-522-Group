@@ -15,6 +15,8 @@ Nuances:
 #include <linux/list.h>
 #include <linux/cpumask.h>
 #include <linux/sched.h>
+#include <uapi/linux/sched/types.h>
+
 
 #define NUM_CORES num_online_cpus()
 #define NUM_TASKS 2
@@ -39,7 +41,7 @@ struct Sub_task{
   unsigned int core; //cpumask.h
  
   unsigned int inUse; //set to 1 if this is a valid task.
-  struct sched_param *priority;
+  struct sched_param priority;
 
   struct list_head sibling;
 };
@@ -58,8 +60,7 @@ struct Task{
 };
 
 static _task_t *taskStruct[NUM_TASKS];
-
-_subtask_t **coreArraySubtasks;
-
+static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
+//static _subtask_t ***coreArraySubtasks;
 
  #endif

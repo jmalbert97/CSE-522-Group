@@ -1,4 +1,3 @@
-  
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
@@ -12,6 +11,7 @@
 #include <linux/kthread.h>
 #include <linux/mm.h>
 #include <asm/uaccess.h>
+#include <linux/delay.h>
 
 //compile with -DX=1
 #ifdef X
@@ -38,17 +38,26 @@ static struct task_struct * kthread = NULL;
 void calibrateThreads(void)
 {
   unsigned int x = 0;
+  struct sched_param p;
   struct task_struct **calibrateThreads;
   calibrateThreads = kmalloc(sizeof(struct task_struct) * NUM_CORES, GFP_KERNEL);
+  p.sched_priority = 99; 
   
   for(x = 0; x < NUM_CORES; x++)
   {
+    printk("Core (%u) task struct created.. \n", x); 
+    //calibrateThreads[x] = kthread_create(thread_fn1, NULL, "test");
     calibrateThreads[x] = kthread_create(calibrate_thread, coreArraySubtasks[x], "calibrate_task");
     kthread_bind(calibrateThreads[x], x);
+    sched_setscheduler(calibrateThreads[x], SCHED_FIFO, &p);
+  }
+  msleep(100); 
+  for(x = 0; x < NUM_CORES; x++)
+  {
+    printk("Waking up thread (%u) ... \n", x); 
     wake_up_process(calibrateThreads[x]);
   }
-
-  kfree(calibrateThreads);
+  //kfree(calibrateThreads);
 }
 
 static int
@@ -99,15 +108,13 @@ kernel_memory_init(void)
     }
     
     //make our array of core-bound subtasks    
-    coreArraySubtasks = kmalloc(sizeof(_subtask_t) * NUM_CORES, GFP_KERNEL);
+    // coreArraySubtasks = (_subtask_t***)kmalloc(sizeof(** struct _subtask_t) * NUM_CORES, GFP_KERNEL);
 
-    for(i = 0; i < NUM_CORES; i++)
-    {
-      coreArraySubtasks[i] =  kmalloc(sizeof(_subtask_t) * NUM_TASKS * NUM_SUBTASKS, GFP_KERNEL);
-    
-      memset(coreArraySubtasks[i], 0,  NUM_TASKS * NUM_SUBTASKS); //zero it out.
-    }
-
+    // for(i = 0; i < NUM_CORES; i++)
+    // {
+    //   coreArraySubtasks[i] =  (_subtask_t**)kmalloc(sizeof( struct _subtask_t *) * NUM_TASKS * NUM_SUBTASKS, GFP_KERNEL);
+    //   //memset(coreArraySubtasks[i], 0,  NUM_TASKS * NUM_SUBTASKS); //zero it out.
+    // }
 
     determineCore(taskStruct); 
 
@@ -116,7 +123,7 @@ kernel_memory_init(void)
         printk(KERN_ERR "Failed to create kernel thread\n");
         return PTR_ERR(kthread);
     }
-    
+    printk("Waking up init thread now .. \n");
     wake_up_process(kthread);
 
     return 0;
@@ -131,13 +138,11 @@ kernel_memory_exit(void)
     for(i = 0; i < NUM_TASKS; i++){
         kfree(taskStruct[i]);
     }
-    
     for(i = 0; i < NUM_CORES; i++)
     {
       kfree(coreArraySubtasks[i]);
     }
-      
-    kfree(coreArraySubtasks);
+    //kfree(coreArraySubtasks);
     
     printk(KERN_INFO "Unloaded kernel_memory module\n");
     

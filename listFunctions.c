@@ -136,6 +136,7 @@ void selectionSortCore(_subtask_t *arr[])
         }  
       }
   }
+  printk("Array now sorted by core...\n"); 
 
   //sort descending by relative deadline for each core 
   for (i = 0; i < NUM_TASKS*NUM_SUBTASKS-1; i++)
@@ -150,44 +151,54 @@ void selectionSortCore(_subtask_t *arr[])
     }
   }
 
+    printk("Array now sorted by relatvie deadline...\n"); 
+
   //if both subtasks on same core, give first (higher rel deadline) a lower priority 
   for(i = 0; i < NUM_SUBTASKS*NUM_TASKS-1; i++){
     if(arr[i]->core == arr[i+1]->core){
-      arr[i]->priority = priority_index; 
+      arr[i]->priority.sched_priority = priority_index; 
       priority_index++; 
     }else{
-      arr[i]->priority = priority_index; 
+      arr[i]->priority.sched_priority = priority_index; 
       priority_index=0; 
     }
     if(i == NUM_SUBTASKS*NUM_TASKS-2){
-      arr[i+1]->priority = priority_index;
+      arr[i+1]->priority.sched_priority = priority_index;
     }
   }
+
+    printk("Priorities have been assigned ...\n"); 
+
 
   //At this point the tasks should be sorted, so when I see if there a
   //core number > current->core that means time to increment arrays
   j = 0;
   k = 0;
-  for(i = 0; i < NUM_SUBTASKS * NUM_TASKS; i++)
+  for(i = 0; i < NUM_SUBTASKS * NUM_TASKS - 1; i++)
   {
- 
     arr[i]->inUse = 1;
     if(i == 0)
     {
       coreArraySubtasks[j][k] = arr[i];
     }
-    else if(coreArraySubtasks[j][k - 1]->core < arr[i]->core)
+    else if(arr[i]->core < arr[i+1]->core)
     {
-      k = 0;
-      j++
       coreArraySubtasks[j][k] = arr[i];
+      k = 0;
+      j++;
     }
     else
     {
       k++;
       coreArraySubtasks[j][k] = arr[i];
     }
+    if(i == NUM_SUBTASKS*NUM_TASKS-2){
+      coreArraySubtasks[j][k] = arr[i+1]; 
+    }
   }
+
+    printk("Core array populated...\n"); 
+
 }  
 
 
@@ -198,7 +209,7 @@ void determineCore(_task_t *taskStruct_temp[]){
     unsigned int k;  
     unsigned int index = 0; 
     //var to keep track of aggregate core utilization
-    unsigned int core_tracker[NUM_CORES]; 
+    unsigned int core_tracker[4]; 
     _subtask_t *tempSubtask;
     _subtask_t *sorted_arr[NUM_TASKS * NUM_SUBTASKS]; 
 
@@ -212,7 +223,7 @@ void determineCore(_task_t *taskStruct_temp[]){
         sorted_arr[index] = tempSubtask; 
         //calculate relative deadline 
         tempSubtask->relative_deadline = (taskStruct_temp[i]->period_ms * tempSubtask->cumulative_exec_time) / taskStruct_temp[i]->exec_time_ms; 
-        printk("subtask(%u) has period (%lu) cum exec time (%lu) task exec time (%lu) => relative deadline: (%lu)\n", index,taskStruct_temp[i]->period_ms , tempSubtask->cumulative_exec_time,taskStruct_temp[i]->exec_time_ms, tempSubtask->relative_deadline); 
+        printk("task(%u) has period (%lu) cum exec time (%u) task exec time (%lu) => relative deadline: (%lu)\n", index,taskStruct_temp[i]->period_ms , tempSubtask->cumulative_exec_time,taskStruct_temp[i]->exec_time_ms, tempSubtask->relative_deadline); 
         index++; 
       }
     }
@@ -234,9 +245,11 @@ void determineCore(_task_t *taskStruct_temp[]){
     selectionSortCore(sorted_arr); 
     
     for(j = 0; j < NUM_TASKS*NUM_SUBTASKS; j++){
-      printk("subtask: (%u) with relative deadline (%lu) assigned priority (%u) on core (%u)\n", j, sorted_arr[j]->relative_deadline, sorted_arr[j]->priority, sorted_arr[j]->core);
+      printk("subtask: (%u) with relative deadline (%lu) assigned priority (%u) on core (%u)\n", j, sorted_arr[j]->relative_deadline, sorted_arr[j]->priority.sched_priority, sorted_arr[j]->core);
 
     }
+
+    printk("Cores have been assigned ...\n"); 
 
 }
 
