@@ -21,6 +21,7 @@
 #endif
 
 #include "listFunctions.h"
+#include "taskFunctions.h"
 
 typedef enum {
   CALIBRATE = 0,
@@ -34,10 +35,37 @@ module_param(mode_temp, charp, 0644);
 
 static struct task_struct * kthread = NULL;
 
+void calibrateThreads(void)
+{
+  unsigned int x = 0;
+  struct task_struct **calibrateThreads;
+  calibrateThreads = kmalloc(sizeof(struct task_struct) * NUM_CORES, GFP_KERNEL);
+  
+  for(x = 0; x < NUM_CORES; x++)
+  {
+    calibrateThreads[x] = kthread_create(calibrate_thread, coreArraySubtasks[x], "calibrate_task");
+    kthread_bind(calibrateThreads[x], x);
+    wake_up_process(calibrateThreads[x]);
+  }
+
+  kfree(calibrateThreads);
+}
+
 static int
 thread_fn(void * data)
 {
     printk("Hello from thread\n");
+
+    switch(mode)
+    {
+      case RUN:
+        break;
+      case CALIBRATE:
+        calibrateThreads();
+        break;
+      default:
+        break;
+    }
 
     while (!kthread_should_stop()) {
         schedule();
@@ -46,19 +74,11 @@ thread_fn(void * data)
     return 0;
 }
 
-static void subtask_func(_subtask_t * subtask_temp){
-    unsigned int i; 
-    for(i = 0; i < subtask_temp->loop_iterations_count; i++){
-        ktime_get(); 
-    }
-}
-
-
 static int
 kernel_memory_init(void)
 {
-    unsigned int i; 
-    unsigned int j; 
+    unsigned int i = 0; 
+    unsigned int j = 0; 
 
     //2. check param for "run" value => set global mode var
     if(strcmp(mode_temp, "run") == 0){
@@ -77,6 +97,17 @@ kernel_memory_init(void)
         setParams(taskStruct[i]);
         printk(KERN_INFO "Tasks Stuff: exec time: (%lu)\n", taskStruct[i]->exec_time_ms);
     }
+    
+    //make our array of core-bound subtasks    
+    coreArraySubtasks = kmalloc(sizeof(_subtask_t) * NUM_CORES, GFP_KERNEL);
+
+    for(i = 0; i < NUM_CORES; i++)
+    {
+      coreArraySubtasks[i] =  kmalloc(sizeof(_subtask_t) * NUM_TASKS * NUM_SUBTASKS, GFP_KERNEL);
+    
+      memset(coreArraySubtasks[i], 0,  NUM_TASKS * NUM_SUBTASKS); //zero it out.
+    }
+
 
     determineCore(taskStruct); 
 
@@ -100,8 +131,16 @@ kernel_memory_exit(void)
     for(i = 0; i < NUM_TASKS; i++){
         kfree(taskStruct[i]);
     }
+    
+    for(i = 0; i < NUM_CORES; i++)
+    {
+      kfree(coreArraySubtasks[i]);
+    }
+      
+    kfree(coreArraySubtasks);
+    
     printk(KERN_INFO "Unloaded kernel_memory module\n");
-
+    
 }
 
 module_init(kernel_memory_init);
