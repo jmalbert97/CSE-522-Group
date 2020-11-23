@@ -14,8 +14,10 @@ int64_t subtask_func_calibrate(_subtask_t *subtaskTemp);
 
 void subtask_func(_subtask_t * subtask_temp);
 
-void get_itterations(_subtask_t subtaskTemp);
+void get_itterations(_subtask_t * subtaskTemp);
 
 int thread_fn1(void * data); 
+
+int subtask_thread_func(void * data); 
 
 #endif

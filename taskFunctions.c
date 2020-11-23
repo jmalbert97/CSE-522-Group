@@ -9,6 +9,15 @@
 #include <linux/kthread.h>
 #include "taskFunctions.h"
 
+int subtask_thread_func(void * data){
+  int num_loops = (int) data; 
+  unsigned int i; 
+  printk("inside the subtask thread.."); 
+  for(i = 0; i < num_loops; i++){
+    ktime_get(); 
+  }
+  return 0; 
+}
 
 void subtask_func(_subtask_t * subtask_temp){
     unsigned int i; 
@@ -18,7 +27,7 @@ void subtask_func(_subtask_t * subtask_temp){
 }
 
 
-void get_itterations(_subtask_t subtaskTemp){
+void get_itterations(_subtask_t * subtaskTemp){
   unsigned int steady_state = 0; 
   unsigned int increase = 1; 
   unsigned int time_exceeded = 0; 
@@ -30,58 +39,42 @@ void get_itterations(_subtask_t subtaskTemp){
   while (!steady_state)
   {
     startTime = ktime_get(); 
-    subtask_func(&subtaskTemp); 
+    subtask_func(subtaskTemp); 
     endTime = ktime_get(); 
     totalTime = ktime_to_ms(ktime_sub(endTime, startTime));
 
-    if(totalTime < subtaskTemp.execution_time)
+    if(totalTime < subtaskTemp->execution_time)
     {
       //double until time is exceeded 
       if(!time_exceeded)
       {
-        subtaskTemp.loop_iterations_count = subtaskTemp.loop_iterations_count * 2; 
-        increase = subtaskTemp.loop_iterations_count;
+        subtaskTemp->loop_iterations_count = subtaskTemp->loop_iterations_count * 2; 
+        increase = subtaskTemp->loop_iterations_count;
       }else{
         return; 
       }
     }else{
       //when time exceeded, subtract by half the last increase
       time_exceeded = 1; 
-      subtaskTemp.loop_iterations_count = subtaskTemp.loop_iterations_count - (increase / 2); 
+      subtaskTemp->loop_iterations_count = subtaskTemp->loop_iterations_count - (increase / 2); 
       increase = increase / 2; 
     }
   }
-  
-
 }
 
 int calibrate_thread(void *threadData)
 {
-  // unsigned int x = 0;
-  _subtask_t *coreSubtasks = (_subtask_t *)threadData;
+  unsigned int i = 0;
+  _subtask_t **coreSubtasks = (_subtask_t **)threadData;
   printk("Calibrating thread ..\n"); 
-  printk("loop its (%u)\n", coreSubtasks[0].loop_iterations_count); 
-
-  //set_current_state(TASK_INTERRUPTIBLE);  
-  //schedule();
   
-  // printk("state is set ..\n"); 
-  // printk("task is scheduled ..\n"); 
-
-  // while(coreSubtasks[x].inUse == 1)
-  // {
-  //   //Set each subtasks's priority
-  //   sched_setscheduler(&(coreSubtasks[x].task), SCHED_FIFO, &(coreSubtasks[x].priority));
-
-  //   get_itterations(coreSubtasks[x]);
-
-  //   printk("Task: %u Subtask: %u Itterations needed: %u to meet execution time of: %lu \n", coreSubtasks[x].parent_index, coreSubtasks[x].sub_task_num, coreSubtasks[x].loop_iterations_count, coreSubtasks[x].execution_time);
-
-  //   x++;
-  // }
-
-  // printk("Calibration finished .. \n"); 
-
+  while(coreSubtasks[i] != NULL){
+    get_itterations(coreSubtasks[i]);
+    coreSubtasks[i]->task = kthread_create(subtask_thread_func, (void *) coreSubtasks[i]->loop_iterations_count, "subtask_thread_func");
+    sched_setscheduler(coreSubtasks[i]->task, SCHED_FIFO, &coreSubtasks[i]->priority);
+    printk("Task: %u Subtask: %u Itterations needed: %u to meet execution time of: %lu on core: %u \n", coreSubtasks[i]->parent_index, coreSubtasks[i]->sub_task_num, coreSubtasks[i]->loop_iterations_count, coreSubtasks[i]->execution_time, coreSubtasks[i]->core);
+    i++;
+  }
   return 0;
 }
 

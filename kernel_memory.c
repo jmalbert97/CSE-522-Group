@@ -32,7 +32,7 @@ _mode_t mode = CALIBRATE;
 
 char * mode_temp = " "; 
 module_param(mode_temp, charp, 0644); 
-
+static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
 static struct task_struct * kthread = NULL;
 
 void calibrateThreads(void)
@@ -102,16 +102,16 @@ kernel_memory_init(void)
         taskStruct[i] = kmalloc(sizeof(_task_t), GFP_KERNEL);
         taskStruct[i] = initTask((i+1)*100,i,NUM_SUBTASKS);
         //initialize subtasks
-        for(j = 0; j < NUM_SUBTASKS; j++){
-            initSubtask(taskStruct[i], (j+1)*10, j, 0, 0); 
+        for(j = 0; j < NUM_SUBTASKS; j++){ 
+            initSubtask(taskStruct[i], (j+1)*10, j, i, 0); 
         }
         setParams(taskStruct[i]);
         printk(KERN_INFO "Tasks Stuff: exec time: (%lu)\n", taskStruct[i]->exec_time_ms);
     }
 
-    determineCore(taskStruct); 
+    determineCore(taskStruct, coreArraySubtasks); 
     //THIS CAUSES A SEG FAULT BUT I HAVE NO CLUE WHY... 
-    //printk("first element for core.. loop its (%u)\n", coreArraySubtasks[0][0]->loop_iterations_count); 
+    printk("first element for core.. loop its (%u)\n", coreArraySubtasks[0][0]->loop_iterations_count); 
 
     kthread = kthread_create(thread_fn, NULL, "k_memory");
     if (IS_ERR(kthread)) {

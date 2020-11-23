@@ -33,7 +33,7 @@ struct Sub_task{
 
   //4. added params 
   struct hrtimer timer;
-  struct task_struct task; 
+  struct task_struct * task; 
   ktime_t last_release_time; 
   unsigned int loop_iterations_count; 
   unsigned int cumulative_exec_time;
@@ -60,7 +60,7 @@ struct Task{
 };
 
 static _task_t *taskStruct[NUM_TASKS];
-static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
+//static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
 //static _subtask_t ***coreArraySubtasks;
 
  #endif
