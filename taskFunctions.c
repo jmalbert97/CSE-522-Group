@@ -79,3 +79,51 @@ int calibrate_thread(void *threadData)
 }
 
 
+_subtask_t * subtask_lookup_function(struct hrtimer * timer){
+  unsigned int x; 
+  _subtask_t *tempSubtask;
+  //go through each core and check timer address, see if match with provided address
+  for(x = 0; x < NUM_CORES; x++){
+    list_for_each_entry(tempSubtask, &taskStruct[i]->subtasks->sibling, sibling ){
+      //if subtask timer address found, return pointer to that subtask 
+      if(&tempSubtask->timer == timer){
+        return tempSubtask; 
+      }
+    }
+  }
+}
+
+enum hrtimer_restart timer_expiration_func(struct * hrtimer timer){
+  _subtask_t * subtask_temp; 
+  subtask_temp = subtask_lookup_function(timer); 
+  wake_up_process(subtask_temp->task); 
+  return HRTIMER_RESTART; 
+}
+
+static int run_thread_func(_subtask_t * subtask_temp){
+  int64_t absolute_time;\
+  static ktime_t timer_interval;
+  hrtimer_init(&subtask_temp->timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS); 
+  subtask_temp->timer.function = timer_expiration_func; 
+  set_current_state(TASK_INTERRUPTIBLE);
+  schedule(); 
+
+  while(!kthread_should_stop){
+    subtask_temp->last_release_time = ktime_get(); 
+    subtask_func(subtask_temp); 
+    //check if subtask is first of its task 
+    if(subtask_temp->sub_task_num == 0){
+      absolute_time = ktime_to_ms(subtask_temp->last_release_time) + subtask_temp->task_period; 
+      //creat ktime interval for timer, 1000000 ns = 1ms 
+      timer_interval = ktime_set(0, absolute_time * 1000000);
+      hrtimer_start(&subtask_temp->timer, timer_interval, HRTIMER_MODE_ABS);
+    }else{
+      //JMA: CONTINUE HERE. THIS IS STEP 8.(7) IN THE INSTRUCTIONS 
+
+    }
+  }
+
+  return 0; 
+
+
+}

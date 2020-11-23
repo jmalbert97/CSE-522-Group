@@ -20,4 +20,6 @@ int thread_fn1(void * data);
 
 int subtask_thread_func(void * data); 
 
+_subtask_t * subtask_lookup_function(hrtimer * timer); 
+
 #endif
