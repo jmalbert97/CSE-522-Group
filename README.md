@@ -85,5 +85,5 @@ Due Date: 11/22/2020
    make -C $LINUX_SOURCE ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- M=$PWD modules 
 
 # Development Effort 
-   For this assigment, the team (Joe & Eric) spent about 30 hours. 
+   For this assigment, the team (Joe & Eric) spent about 50 hours. 
 
