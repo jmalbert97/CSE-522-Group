@@ -48,7 +48,7 @@ void delSubtask(_subtask_t *parentSubtask);
 
 void setParams(_task_t *taskStruct);
 
-void determineCore(_task_t *taskStruct_temp[]); 
+void determineCore(_task_t *taskStruct_temp[], _subtask_t *coreArraySubtasks_temp[][NUM_TASKS*NUM_SUBTASKS]); 
 
 
 #endif
