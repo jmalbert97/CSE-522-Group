@@ -9,6 +9,7 @@
 #endif
 
 #include <linux/sched.h>
+#include <linux/kthread.h>
 
 int calibrate_thread(void *threadData);
 

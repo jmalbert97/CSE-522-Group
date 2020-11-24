@@ -33,7 +33,7 @@ _mode_t mode = CALIBRATE;
 char * mode_temp = " "; 
 module_param(mode_temp, charp, 0644); 
 static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
-struct task_struct subTasks[NUM_TASKS * NUM_SUBTASKS];
+struct task_struct *subTasks[NUM_TASKS * NUM_SUBTASKS];
 static struct task_struct * kthread = NULL;
 
 void calibrateThreads(void)
@@ -90,7 +90,7 @@ void runThreads(void)
     y = 0;
     list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
     {
-      wake_up_process(&subTasks[y + x * NUM_SUBTASKS]);
+      wake_up_process(subTasks[y + x * NUM_SUBTASKS]);
     }
   }
 }
