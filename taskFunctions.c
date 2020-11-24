@@ -16,8 +16,9 @@ static int calibrate_thread(void *threadData)
 
   while(coreSubtasks[x]->inUse == 1)
   {
+    long offset = 1;
     //Set each subtasks's priority
-    sched_setscheduler(coreSubtasks[x]->task, SCHED_FIFO, coreSubtasks[x]->priority);
+    sched_setscheduler(coreSubtasks[x]->task, SCHED_FIFO, &coreSubtasks[x].priority);
 
     //Pass a pointer to the subtask function
     int64_t taskTime = subtask_func(coreSubtasks[x]);
@@ -27,6 +28,27 @@ static int calibrate_thread(void *threadData)
 
     kprintf("Task: %u Subtask: %u Itterations needed: %u\n", coreSubtasks[x]->parent_index, coreSubtasks[x]->sub_task_num, coreSubtasks[x]->loop_iterations_count);
 
+
+    ktime_t startTime = ktime_get();
+    subtask_func(coreSubtasks[x]);
+    ktime_t endTime = ktime_get();
+    while(ktime_to_ms(ktime_sub(endTime,startTime)) < execution_time - task_time || ktime_to_ms(ktime_sub(endTime,startTime)) > execution_time + task_time)
+    {
+      if(ktime_to_ms(ktime_sub(endTime,startTime)) < execution_time - task_time)
+      {
+        coreSubtasks[x]->loop_iterations_count += taskTime << offset;
+        offset++
+      }
+      else if(ktime_to_ms(ktime_sub(endTime,startTime)) > execution_time + task_time)
+      {
+        coreSubtasks[x]->loop_iterations_count -= taskTime << offset;
+        offset--;
+      }
+      ktime_t startTime = ktime_get();
+      subtask_func(coreSubtasks[x]);
+      ktime_t endTime = ktime_get();
+    }
+    
     x++
   }
 
