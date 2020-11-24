@@ -95,6 +95,23 @@ void runThreads(void)
   }
 }
 
+void killThreads(void)
+{
+  _subtask_t *tempSubtask = NULL;
+  int x = 0, y = 0;
+   
+  for(x = 0; x < NUM_TASKS; x++)
+  {
+    y = 0;
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
+    {
+      hrtimer_cancel(&tempSubtask->timer);
+
+      kthread_stop(subTasks[y + x * NUM_SUBTASKS]);
+    }
+  }
+}
+
 static int
 thread_fn(void * data)
 {
@@ -176,7 +193,9 @@ kernel_memory_exit(void)
       //kfree(coreArraySubtasks[i]);
     }
     //kfree(coreArraySubtasks);
-    
+
+    killThreads();
+
     printk(KERN_INFO "Unloaded kernel_memory module\n");
     
 }
