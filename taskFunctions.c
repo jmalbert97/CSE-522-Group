@@ -79,3 +79,26 @@ int calibrate_thread(void *threadData)
 }
 
 
+_subtask_t * subtask_lookup_function(struct hrtimer * timer){
+  unsigned int x; 
+  _subtask_t *tempSubtask;
+  //go through each core and check timer address, see if match with provided address
+  for(x = 0; x < NUM_CORES; x++){
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling ){
+      //if subtask timer address found, return pointer to that subtask 
+      if(&tempSubtask->timer == timer){
+        break;
+      }
+    }
+  }
+  return tempSubtask; 
+}
+
+enum hrtimer_restart timer_expiration_func(struct hrtimer *timer){
+  _subtask_t * subtask_temp; 
+  subtask_temp = subtask_lookup_function(timer); 
+  wake_up_process(subtask_temp->task); 
+  return HRTIMER_RESTART; 
+}
+
+
