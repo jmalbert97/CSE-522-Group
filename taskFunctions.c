@@ -8,6 +8,13 @@
 #include <linux/sched.h>
 #include <linux/kthread.h>
 #include "taskFunctions.h"
+#include <linux/kthread.h>
+#include <linux/mm.h>
+#include <linux/ktime.h>
+#include <asm/uaccess.h>
+#include <linux/sched.h>
+#include <uapi/linux/sched/types.h>
+#include <linux/hrtimer.h>
 
 int subtask_thread_func(void * data){
   int num_loops = (int) data; 
@@ -84,31 +91,32 @@ _subtask_t * subtask_lookup_function(struct hrtimer * timer){
   _subtask_t *tempSubtask;
   //go through each core and check timer address, see if match with provided address
   for(x = 0; x < NUM_CORES; x++){
-    list_for_each_entry(tempSubtask, &taskStruct[i]->subtasks->sibling, sibling ){
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling ){
       //if subtask timer address found, return pointer to that subtask 
       if(&tempSubtask->timer == timer){
         return tempSubtask; 
       }
     }
   }
+  return tempSubtask; 
 }
 
-enum hrtimer_restart timer_expiration_func(struct * hrtimer timer){
+enum hrtimer_restart timer_expiration_func(struct hrtimer * timer){
   _subtask_t * subtask_temp; 
   subtask_temp = subtask_lookup_function(timer); 
   wake_up_process(subtask_temp->task); 
   return HRTIMER_RESTART; 
 }
 
-static int run_thread_func(_subtask_t * subtask_temp){
-  int64_t absolute_time;\
+int run_thread_func(_subtask_t * subtask_temp){
+  int64_t absolute_time;
   static ktime_t timer_interval;
   hrtimer_init(&subtask_temp->timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS); 
   subtask_temp->timer.function = timer_expiration_func; 
   set_current_state(TASK_INTERRUPTIBLE);
   schedule(); 
 
-  while(!kthread_should_stop){
+  while(!kthread_should_stop()){
     subtask_temp->last_release_time = ktime_get(); 
     subtask_func(subtask_temp); 
     //check if subtask is first of its task 
