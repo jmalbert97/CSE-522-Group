@@ -38,8 +38,8 @@ struct Sub_task{
   unsigned int cumulative_exec_time;
   unsigned int utilization; //I know we have an FPU in the pi, but apparently it's expensive to use 
   unsigned int core; //cpumask.h
-  unsigned int task_period; 
- 
+
+  unsigned int task_period;
   unsigned int inUse; //set to 1 if this is a valid task.
   struct sched_param priority;
 

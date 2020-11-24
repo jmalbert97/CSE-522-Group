@@ -8,6 +8,9 @@
 #include "header.h"
 #endif
 
+#include <linux/sched.h>
+#include <linux/kthread.h>
+
 int calibrate_thread(void *threadData);
 
 int64_t subtask_func_calibrate(_subtask_t *subtaskTemp);
@@ -20,6 +23,10 @@ int thread_fn1(void * data);
 
 int subtask_thread_func(void * data); 
 
-_subtask_t * subtask_lookup_function(hrtimer * timer); 
+_subtask_t * subtask_lookup_function(struct hrtimer * timer);
+
+enum hrtimer_restart timer_expiration_func(struct hrtimer *timer);
+
+int run_thread_func(void *data);
 
 #endif

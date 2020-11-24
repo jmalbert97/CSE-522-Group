@@ -33,6 +33,7 @@ _mode_t mode = CALIBRATE;
 char * mode_temp = " "; 
 module_param(mode_temp, charp, 0644); 
 static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
+struct task_struct *subTasks[NUM_TASKS * NUM_SUBTASKS];
 static struct task_struct * kthread = NULL;
 
 void calibrateThreads(void)
@@ -61,6 +62,56 @@ void calibrateThreads(void)
   //kfree(calibrateThreads);
 }
 
+void setupThreads(void)
+{
+  _subtask_t *tempSubtask = NULL;
+  int x = 0, y = 0;
+   
+  for(x = 0; x < NUM_TASKS; x++)
+  {
+    y = 0;
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
+    {
+      subTasks[y + x * NUM_SUBTASKS] = kthread_create(run_thread_func, tempSubtask, "run_task");
+
+      kthread_bind(subTasks[y + x * NUM_SUBTASKS], tempSubtask->core);
+      sched_setscheduler(subTasks[y + x * NUM_SUBTASKS], SCHED_FIFO, &tempSubtask->priority);
+    }
+  }
+}
+
+void runThreads(void)
+{
+  _subtask_t *tempSubtask = NULL;
+  int x = 0, y = 0;
+   
+  for(x = 0; x < NUM_TASKS; x++)
+  {
+    y = 0;
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
+    {
+      wake_up_process(subTasks[y + x * NUM_SUBTASKS]);
+    }
+  }
+}
+
+void killThreads(void)
+{
+  _subtask_t *tempSubtask = NULL;
+  int x = 0, y = 0;
+   
+  for(x = 0; x < NUM_TASKS; x++)
+  {
+    y = 0;
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
+    {
+      hrtimer_cancel(&tempSubtask->timer);
+
+      kthread_stop(subTasks[y + x * NUM_SUBTASKS]);
+    }
+  }
+}
+
 static int
 thread_fn(void * data)
 {
@@ -69,6 +120,10 @@ thread_fn(void * data)
     switch(mode)
     {
       case RUN:
+        printk("In run mode...\n");
+        setupThreads();
+        printk("Going to run threads...\n");
+        runThreads();
         break;
       case CALIBRATE:
         printk("calibrating the threads ...\n"); 
@@ -138,7 +193,9 @@ kernel_memory_exit(void)
       //kfree(coreArraySubtasks[i]);
     }
     //kfree(coreArraySubtasks);
-    
+
+    killThreads();
+
     printk(KERN_INFO "Unloaded kernel_memory module\n");
     
 }
