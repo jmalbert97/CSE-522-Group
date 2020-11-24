@@ -59,6 +59,7 @@ void get_itterations(_subtask_t * subtaskTemp){
       subtaskTemp->loop_iterations_count = subtaskTemp->loop_iterations_count - (increase / 2); 
       increase = increase / 2; 
     }
+
   }
 }
 
@@ -95,6 +96,7 @@ _subtask_t * subtask_lookup_function(struct hrtimer * timer){
 }
 
 enum hrtimer_restart timer_expiration_func(struct hrtimer *timer){
+
   _subtask_t * subtask_temp; 
   subtask_temp = subtask_lookup_function(timer); 
   wake_up_process(subtask_temp->task); 
