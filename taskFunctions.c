@@ -59,6 +59,7 @@ void get_itterations(_subtask_t * subtaskTemp){
       subtaskTemp->loop_iterations_count = subtaskTemp->loop_iterations_count - (increase / 2); 
       increase = increase / 2; 
     }
+
   }
 }
 
