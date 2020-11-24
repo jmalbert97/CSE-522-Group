@@ -17,7 +17,6 @@ Nuances:
 #include <linux/sched.h>
 #include <uapi/linux/sched/types.h>
 
-
 #define NUM_CORES num_online_cpus()
 #define NUM_TASKS 2
 #define NUM_SUBTASKS 4

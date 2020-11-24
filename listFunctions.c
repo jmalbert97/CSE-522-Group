@@ -221,7 +221,16 @@ void determineCore(_task_t *taskStruct_temp[], _subtask_t *coreArraySubtasks_tem
         sorted_arr[index] = tempSubtask; 
         //calculate relative deadline 
         tempSubtask->relative_deadline = (taskStruct_temp[i]->period_ms * tempSubtask->cumulative_exec_time) / taskStruct_temp[i]->exec_time_ms; 
-        printk("task(%u) has period (%lu) cum exec time (%u) task exec time (%lu) subtask exec time (%lu) => relative deadline: (%lu)\n", index,taskStruct_temp[i]->period_ms , tempSubtask->cumulative_exec_time,taskStruct_temp[i]->exec_time_ms, tempSubtask->execution_time, tempSubtask->relative_deadline); 
+        
+        printk("task(%u) has period (%lu) cum exec time (%u) task exec time (%lu) subtask exec time (%lu) => relative deadline: (%lu)\n"
+               , index
+               , taskStruct_temp[i]->period_ms 
+               , tempSubtask->cumulative_exec_time
+               , taskStruct_temp[i]->exec_time_ms
+               , tempSubtask->execution_time
+               , tempSubtask->relative_deadline
+              ); 
+        
         index++; 
       }
     }
@@ -243,7 +252,7 @@ void determineCore(_task_t *taskStruct_temp[], _subtask_t *coreArraySubtasks_tem
     selectionSortCore(sorted_arr, coreArraySubtasks_temp); 
     
     for(j = 0; j < NUM_TASKS*NUM_SUBTASKS; j++){
-      printk("subtask: (%u) with relative deadline (%lu) assigned priority (%u) on core (%u)\n", j, sorted_arr[j]->relative_deadline, sorted_arr[j]->priority.sched_priority, sorted_arr[j]->core);
+      printk("subtask: (%u) with relative deadline (%lu) assigned priority (%i) on core (%u)\n", j, sorted_arr[j]->relative_deadline, sorted_arr[j]->priority.sched_priority, sorted_arr[j]->core);
 
     }
   
