@@ -107,7 +107,6 @@ int run_thread_func(void *data){
  
   _subtask_t *subtask_temp = (_subtask_t *)data; 
   _subtask_t *nextSubtask = NULL;
-  unsigned int subtaskSiblingIndex = 0;
 
   
   int64_t absolute_time;
@@ -119,19 +118,15 @@ int run_thread_func(void *data){
   
   printk("inside run_thread_func for run mode..\n"); 
 
-  /*
-  for(subtaskSiblingIndex = 0; subtaskSiblingIndex < NUM_TASKS; subtaskSiblingIndex++)
+  list_for_each_entry(nextSubtask, &taskStruct[subtask_temp->parent_index]->subtasks->sibling, sibling)
   {
-    if(coreArraySubtasks[subtask_temp->parent_index][subtaskSiblingIndex]->sub_task_num == subtask_temp->sub_task_num + 1)
+    if(nextSubtask->sub_task_num == subtask_temp->sub_task_num + 1)
     {
-      printk("Broke!");
-      nextSubtask = coreArraySubtasks[subtask_temp->parent_index][subtaskSiblingIndex];
       break;
     }
   }
-  */
+  
   while(!kthread_should_stop()){
-    printk("Should not stop!");
     subtask_temp->last_release_time = ktime_get(); 
     subtask_func(subtask_temp); 
     //check if subtask is first of its task 
@@ -153,7 +148,6 @@ int run_thread_func(void *data){
         wake_up_process(nextSubtask->task);
       }
     }
-      printk("inside run_thread_func loop for run mode..\n"); 
   }
 
   return 0; 

@@ -70,8 +70,18 @@ Due Date: 11/22/2020
 
    In the modules init function, a thread is woken which calls the function calibrateThreads(). The calibrateThreads() function creates a thread for each core, sets the scheduling policy and priority, and then sets a sleep timer for 100ms. Next, the threads are woken up and call their thread function, calibrate_thread(), found in taskFunctions.c. The function calls another function, get_itterations() which sets a timer before and after a call to the subtasks function. The function sets each subtasks loop_itterations_count field to the appropriate value which meets timing requirements, with a simple binary search for simplicity sake. The calibrate_thread() function then creates the thread for each subtask for the given core, and sets the thread’s policy and priority. 
 
+# Run Design:
+   If run mode is enabled, the first thing that we do is initialize our timer so that the end to end functionality can be achieved. Once the timer goes off, we'll wake up a given process (or depending on the circumstances the subsequent process). At that point, assuming that the thread can still be run (i.e. we haven't unloaded the module early) we then actually do our "work" by repeatedly calling ktime_get() for a particular number of times.
+
+   Next we check if we're the first subtask. If we are then sleep for an "absolute" time that is our last_release_time (the time right be fore we started doing work). We will then sleep to finish out the remaining time. In the ideal world the timer would wake up right away because of how accurate the estimation was.
+
+   If we aren't the first subtask, then we'll check if we've used up our time quantum. If so, then we'll wake up the next task (presuming it exists); otherwise we'll just sleep.
+
+
 # Testing and Evaluation
-   describe all the test cases you ran, and your observations about how your module performed in each of the test cases. If you run into any issues during testing where your kernel module isn't working correctly, in this section of your report please decribe briefly what the issue was, how testing helped to identify it, and how you fixed that issue if you were able to do so (or if you were not able to do so please give any insights you may have regarding whether or not you think a solution exists - some cases simply may not be schedulable or if they are, there may or may not be a solution to some cases you may have attempted under the assumptions made in this assignment).
+  When it comes to testing, we were unable to fully complete it. We successfully got the calibrate functionality working; however when it came to the run functionality, there seemed to be some issues. In particular there were some invalid memory location accesses (despite passing in pointers and values where necessary. We went so far as to add -Werror in our make file to have gcc treat all warnings as errors to try and write the "best" code.
+
+  The code that is presented should be enough to give an idea of what needs to happen for successful runs. The probablem seems to lie within the list_for_each_entry that determines what the next subtask is.
 
 # Build Instructions
    In order to build the module, a Makefile has been included. The build should be compiled on a linux lab machine, and run on a raspberry pi. In order to build the module, run the following commands on a linux lab machine in the project directory: 
@@ -80,10 +90,10 @@ Due Date: 11/22/2020
 
    KERNEL=kernel7
 
-   LINUX_SOURCE=path_to_/linus_source/linux
+   LINUX_SOURCE=path_to_/linux_source/linux
 
    make -C $LINUX_SOURCE ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- M=$PWD modules 
 
 # Development Effort 
-   For this assigment, the team (Joe & Eric) spent about 50 hours. 
+   For this assignment, the team (Joe & Eric) spent about 75 hours. 
 

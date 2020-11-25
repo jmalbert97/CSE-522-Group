@@ -47,7 +47,6 @@ void calibrateThreads(void)
   for(x = 0; x < NUM_CORES; x++)
   {
     printk("Core (%u) task struct created.. \n", x); 
-    //calibrateThreads[x] = kthread_create(thread_fn1, NULL, "test");
     calibrateThreads[x] = kthread_create(calibrate_thread, coreArraySubtasks[x], "calibrate_task");
     kthread_bind(calibrateThreads[x], x);
     sched_setscheduler(calibrateThreads[x], SCHED_FIFO, &p);
@@ -58,6 +57,7 @@ void calibrateThreads(void)
     printk("Waking up thread (%u) ... \n", x); 
     wake_up_process(calibrateThreads[x]);
   }
+
   //kfree(calibrateThreads);
 }
 
@@ -112,7 +112,7 @@ void killThreads(void)
       printk("Task timer cancelled.\n");
       if(subTasks[y + x * NUM_SUBTASKS] != NULL){
         printk("task was not null..\n"); 
-        //kthread_stop(subTasks[y + x * NUM_SUBTASKS]);
+        kthread_stop(subTasks[y + x * NUM_SUBTASKS]);
       }
       printk("Task: (%u) subtask (%u) removed..\n", tempSubtask->parent_index, tempSubtask->sub_task_num); 
       y++; 
