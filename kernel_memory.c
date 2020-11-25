@@ -35,6 +35,8 @@ module_param(mode_temp, charp, 0644);
 struct task_struct *subTasks[NUM_TASKS * NUM_SUBTASKS];
 static struct task_struct * kthread = NULL;
 
+
+
 void calibrateThreads(void)
 {
   unsigned int x = 0;
@@ -65,12 +67,12 @@ void setupThreads(void)
 {
   _subtask_t *tempSubtask = NULL;
   int x = 0, y = 0;
-   
   for(x = 0; x < NUM_TASKS; x++)
   {
     y = 0;
     list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
     {
+      //subTasks[y + x * NUM_SUBTASKS] = kthread_create(run_thread_func, tempSubtask, "run_task");   
       subTasks[y + x * NUM_SUBTASKS] = kthread_create(run_thread_func, tempSubtask, "run_task");
 
       kthread_bind(subTasks[y + x * NUM_SUBTASKS], tempSubtask->core);
@@ -92,6 +94,7 @@ void runThreads(void)
     list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
     {
       wake_up_process(subTasks[y + x * NUM_SUBTASKS]);
+      wake_up_process(subTasks[y + x * NUM_SUBTASKS]);
       y++; 
     }
   }
@@ -112,7 +115,7 @@ void killThreads(void)
       printk("Task timer cancelled.\n");
       if(subTasks[y + x * NUM_SUBTASKS] != NULL){
         printk("task was not null..\n"); 
-        //kthread_stop(subTasks[y + x * NUM_SUBTASKS]);
+        kthread_stop(subTasks[y + x * NUM_SUBTASKS]);
       }
       printk("Task: (%u) subtask (%u) removed..\n", tempSubtask->parent_index, tempSubtask->sub_task_num); 
       y++; 
@@ -197,7 +200,7 @@ kernel_memory_exit(void)
     {
       case RUN:
         printk("RUN mode: Killing threads.\n"); 
-        killThreads();
+        //killThreads();
         break;
       case CALIBRATE:
         break;

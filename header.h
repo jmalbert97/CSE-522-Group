@@ -24,6 +24,7 @@ Nuances:
 typedef struct Task _task_t;
 typedef struct Sub_task _subtask_t;
 
+
 struct Sub_task{
   unsigned long execution_time; 
   unsigned long relative_deadline; 
@@ -58,8 +59,15 @@ struct Task{
   struct list_head sibling;
 };
 
+
 static _task_t *taskStruct[NUM_TASKS];
 
+<<<<<<< Updated upstream
 static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
+=======
+static _subtask_t * get_subtasks_from_tasks(int x){
+  return taskStruct[x]->subtasks; 
+}
+>>>>>>> Stashed changes
 
  #endif

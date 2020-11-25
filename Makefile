@@ -9,7 +9,7 @@ endif
 
 
 
-EXTRA_CFLAGS += -DMODULE=1 -D__KERNEL__=1 -Werror -Wno-unused-variable
+EXTRA_CFLAGS += -DMODULE=1 -D__KERNEL__=1 -Wno-unused-variable 
 
 obj-m := lab.o
 lab-objs := kernel_memory.o listFunctions.o taskFunctions.o

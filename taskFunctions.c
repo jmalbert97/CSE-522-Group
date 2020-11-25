@@ -8,6 +8,10 @@
 #include <linux/sched.h>
 #include <linux/kthread.h>
 #include "taskFunctions.h"
+#include <linux/kernel.h>
+#include <uapi/linux/sched/types.h>
+#include <linux/ktime.h>
+#include <linux/hrtimer.h>
 
 int subtask_thread_func(void * data){
   int num_loops = (int) data; 
@@ -103,17 +107,20 @@ enum hrtimer_restart timer_expiration_func(struct hrtimer *timer){
   return HRTIMER_RESTART; 
 }
 
-int run_thread_func(void *data){
- 
+int run_thread_func(void *data){ 
+  //printk("inside run_thread_func for run mode..\n"); 
+  
   _subtask_t *subtask_temp = (_subtask_t *)data; 
   _subtask_t *nextSubtask = NULL;
   unsigned int subtaskSiblingIndex = 0;
-
-  
   int64_t absolute_time;
   static ktime_t timer_interval;
-  hrtimer_init(&subtask_temp->timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS); 
+  unsigned int x; 
+  printk("initializing timer -> subtask loop it count: (%u)\n", subtask_temp->loop_iterations_count); 
+  hrtimer_init(&(subtask_temp->timer), CLOCK_MONOTONIC, HRTIMER_MODE_ABS); 
+  printk("timer init done.\n"); 
   subtask_temp->timer.function = timer_expiration_func; 
+<<<<<<< Updated upstream
   set_current_state(TASK_INTERRUPTIBLE);
   schedule(); 
   
@@ -151,8 +158,55 @@ int run_thread_func(void *data){
       else
       {
         wake_up_process(nextSubtask->task);
+=======
+  printk("timer function set\n"); 
+
+  while(!kthread_should_stop()){
+    printk("inside run_thread_func loop for run mode..\n"); 
+    set_current_state(TASK_INTERRUPTIBLE);
+    printk("state set\n"); 
+    schedule(); 
+
+
+    for(x = 0; x < NUM_CORES; x++){
+      list_for_each_entry(nextSubtask, &(get_subtasks_from_tasks(x)->sibling), sibling ){
+        // if((nextSubtask->sub_task_num == subtask_temp->sub_task_num + 1) && (nextSubtask->parent_index == subtask_temp->parent_index))
+        // {
+        //   break;
+        // } 
+>>>>>>> Stashed changes
       }
     }
+    // list_for_each_entry(nextSubtask, &taskStruct[subtask_temp->parent_index]->subtasks->sibling, sibling)
+    // {
+    //   printk("LOOP ITS COUNT IN LIST LOOP: (%u)\n",nextSubtask->loop_iterations_count);
+    //   // if(subtaskSiblingIndex == subtask_temp->sub_task_num + 1)
+    //   // {
+    //   //   break;
+    //   // } 
+    // }
+
+    // subtask_temp->last_release_time = ktime_get(); 
+    // subtask_func(subtask_temp); 
+    // //check if subtask is first of its task 
+    // if(subtask_temp->sub_task_num == 0){
+    //   absolute_time = ktime_to_ms(subtask_temp->last_release_time) + subtask_temp-> task_period; 
+    //   //creat ktime interval for timer, 1000000 ns = 1ms 
+    //   timer_interval = ktime_set(0, absolute_time * 1000000);
+    //   hrtimer_start(&subtask_temp->timer, timer_interval, HRTIMER_MODE_ABS);
+    // }else if(taskStruct[subtask_temp->parent_index]->num_subtasks != subtask_temp->sub_task_num){
+    //   ktime_t current_time = ktime_get();
+
+    //   if(ktime_to_ms(current_time) < (subtask_temp->task_period + ktime_to_ms(nextSubtask->last_release_time)))
+    //   {
+    //     timer_interval = ktime_set(0, (nextSubtask->task_period * 1000000) + ktime_to_ns(nextSubtask->last_release_time));
+    //     hrtimer_start(&nextSubtask->timer, timer_interval, HRTIMER_MODE_ABS);
+    //   }
+    //   else
+    //   {
+    //     wake_up_process(nextSubtask->task);
+    //   }
+    //}
       printk("inside run_thread_func loop for run mode..\n"); 
   }
 
