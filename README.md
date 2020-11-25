@@ -81,7 +81,7 @@ Due Date: 11/22/2020
 # Testing and Evaluation
   When it comes to testing, we were unable to fully complete it. We successfully got the calibrate functionality working; however when it came to the run functionality, there seemed to be some issues. In particular there were some invalid memory location accesses (despite passing in pointers and values where necessary. We went so far as to add -Werror in our make file to have gcc treat all warnings as errors to try and write the "best" code.
 
-  The code that is presented should be enough to give an idea of what needs to happen for successful runs. The probablem seems to lie within the list_for_each_entry that determines what the next subtask is.
+  The code that is presented should be enough to give an idea of what needs to happen for successful runs. The probablem seems to lie within the list_for_each_entry that determines what the next subtask is. The array which we used to hold pointers to the _subtasks_ for each task was determined to not be acessible within the file. We tried many fixes, from adding a get_subtask_from_task_index() function, to creating a copy of the taskStruct[] array, but none of them allowed us to access the tasks and subtasks. After many hours of struggling, we decided to turn in our best effort attempt. 
 
 # Build Instructions
    In order to build the module, a Makefile has been included. The build should be compiled on a linux lab machine, and run on a raspberry pi. In order to build the module, run the following commands on a linux lab machine in the project directory: 
@@ -95,5 +95,5 @@ Due Date: 11/22/2020
    make -C $LINUX_SOURCE ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- M=$PWD modules 
 
 # Development Effort 
-   For this assignment, the team (Joe & Eric) spent about 75 hours. 
+   For this assignment, the team (Joe & Eric) spent about 75 hours. It should be noted that the team did struggle significantly, and felt in future assignments TA hours would be extremely beneficial. Most of the issues arose from seg faults, which required restarting the pi with every new attempt, and took up a significant amount of our debugging time. 
 
