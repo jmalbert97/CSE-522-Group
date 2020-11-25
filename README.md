@@ -95,5 +95,5 @@ Due Date: 11/22/2020
    make -C $LINUX_SOURCE ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- M=$PWD modules 
 
 # Development Effort 
-   For this assignment, the team (Joe & Eric) spent about 75 hours. It should be noted that the team did struggle significantly, and felt in future assignments TA hours would be extremely beneficial. Most of the issues arose from seg faults, which required restarting the pi with every new attempt, and took up a significant amount of our debugging time. 
+   For this assignment, the team (Joe & Eric) spent about 75 hours. It should be noted that the team did struggle significantly despite best efforts to make use of course resources (piazza, slides, lectures, and others); however, they ultimatly failed to resolve the most pressing issue from seg faults. Those required restarting the pi with every new attempt, and took up a significant amount of our debugging time.
 
