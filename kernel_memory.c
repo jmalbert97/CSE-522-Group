@@ -28,11 +28,12 @@ typedef enum {
   RUN = 1
 } _mode_t;
 
-_mode_t mode = CALIBRATE;
+_mode_t mode = RUN;
 
 char * mode_temp = " "; 
 module_param(mode_temp, charp, 0644); 
 static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
+struct task_struct *subTasks[NUM_TASKS * NUM_SUBTASKS];
 static struct task_struct * kthread = NULL;
 
 void calibrateThreads(void)
@@ -61,6 +62,64 @@ void calibrateThreads(void)
   //kfree(calibrateThreads);
 }
 
+void setupThreads(void)
+{
+  _subtask_t *tempSubtask = NULL;
+  int x = 0, y = 0;
+   
+  for(x = 0; x < NUM_TASKS; x++)
+  {
+    y = 0;
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
+    {
+      subTasks[y + x * NUM_SUBTASKS] = kthread_create(run_thread_func, tempSubtask, "run_task");
+
+      kthread_bind(subTasks[y + x * NUM_SUBTASKS], tempSubtask->core);
+      sched_setscheduler(subTasks[y + x * NUM_SUBTASKS], SCHED_FIFO, &tempSubtask->priority);
+      y++; 
+    }
+  }
+}
+
+void runThreads(void)
+{
+  _subtask_t *tempSubtask = NULL;
+  int x = 0, y = 0;
+   
+  for(x = 0; x < NUM_TASKS; x++)
+  {
+    y = 0;
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
+    {
+      wake_up_process(subTasks[y + x * NUM_SUBTASKS]);
+      y++; 
+    }
+  }
+}
+
+void killThreads(void)
+{
+  _subtask_t *tempSubtask = NULL;
+  int x = 0, y = 0;
+   
+  for(x = 0; x < NUM_TASKS; x++)
+  {
+    y = 0;
+    list_for_each_entry(tempSubtask, &taskStruct[x]->subtasks->sibling, sibling )
+    {
+      printk("Task: (%u) subtask (%u) being removed..\n", tempSubtask->parent_index, tempSubtask->sub_task_num); 
+      hrtimer_cancel(&tempSubtask->timer);
+      printk("Task timer cancelled.\n");
+      if(subTasks[y + x * NUM_SUBTASKS] != NULL){
+        printk("task was not null..\n"); 
+        //kthread_stop(subTasks[y + x * NUM_SUBTASKS]);
+      }
+      printk("Task: (%u) subtask (%u) removed..\n", tempSubtask->parent_index, tempSubtask->sub_task_num); 
+      y++; 
+    }
+  }
+}
+
 static int
 thread_fn(void * data)
 {
@@ -69,6 +128,10 @@ thread_fn(void * data)
     switch(mode)
     {
       case RUN:
+        printk("In run mode...\n");
+        setupThreads();
+        printk("Going to run threads...\n");
+        runThreads();
         break;
       case CALIBRATE:
         printk("calibrating the threads ...\n"); 
@@ -128,17 +191,40 @@ static void
 kernel_memory_exit(void)
 {
     unsigned int i; 
+    unsigned int j; 
+
+    switch(mode)
+    {
+      case RUN:
+        printk("RUN mode: Killing threads.\n"); 
+        killThreads();
+        break;
+      case CALIBRATE:
+        break;
+      default:
+        break;
+    }
+
     kthread_stop(kthread);
+
     //delTask(*taskStruct);
+    printk("freeing task struct..\n"); 
     for(i = 0; i < NUM_TASKS; i++){
         kfree(taskStruct[i]);
     }
-    for(i = 0; i < NUM_CORES; i++)
-    {
-      //kfree(coreArraySubtasks[i]);
-    }
+    // for(i = 0; i < NUM_CORES; i++)
+    // {
+    //   for(j=0; j < NUM_TASKS*NUM_SUBTASKS; j++){
+    //     printk("freeing index (%u) x (%u)\n", i, j); 
+    //     //if(coreArraySubtasks[i][j] != NULL){
+    //       //kfree(coreArraySubtasks[i][j]);
+    //       printk("index freed. \n"); 
+    //     //}
+    //   }
+    // }
     //kfree(coreArraySubtasks);
-    
+
+
     printk(KERN_INFO "Unloaded kernel_memory module\n");
     
 }

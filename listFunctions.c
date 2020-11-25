@@ -15,6 +15,7 @@ _subtask_t *initSubtask(_task_t *parentTask, int execution_time, int sub_task_nu
   newSubtask->last_release_time = 0; 
   newSubtask->loop_iterations_count = 9804; 
   newSubtask->inUse = 1;
+
   newSubtask->task_period = parentTask->period_ms; 
   if(firstRun)
   {

@@ -38,8 +38,8 @@ struct Sub_task{
   unsigned int cumulative_exec_time;
   unsigned int utilization; //I know we have an FPU in the pi, but apparently it's expensive to use 
   unsigned int core; //cpumask.h
-  unsigned int task_period; 
- 
+
+  unsigned int task_period;
   unsigned int inUse; //set to 1 if this is a valid task.
   struct sched_param priority;
 
@@ -47,10 +47,9 @@ struct Sub_task{
 };
 
 struct Task{
-  //CEN: should probably use a uint32 or something instead of long...
   unsigned long period_ms;
   unsigned int task_num; 
-  unsigned int num_subtasks;  //hmmm...may not need. TODO: check API to see if there is a fast way to get the number of subtasks
+  unsigned int num_subtasks; 
   unsigned long exec_time_ms; 
 
   uint8_t firstRun;
@@ -60,7 +59,5 @@ struct Task{
 };
 
 static _task_t *taskStruct[NUM_TASKS];
-//static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
-//static _subtask_t ***coreArraySubtasks;
 
  #endif
