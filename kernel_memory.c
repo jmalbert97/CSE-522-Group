@@ -224,6 +224,7 @@ kernel_memory_exit(void)
     // }
     //kfree(coreArraySubtasks);
 
+    //killThreads();
 
     printk(KERN_INFO "Unloaded kernel_memory module\n");
     
