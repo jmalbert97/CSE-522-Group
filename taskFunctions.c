@@ -119,16 +119,19 @@ int run_thread_func(void *data){
   
   printk("inside run_thread_func for run mode..\n"); 
 
-  list_for_each_entry(nextSubtask, &taskStruct[subtask_temp->parent_index]->subtasks->sibling, sibling)
+  /*
+  for(subtaskSiblingIndex = 0; subtaskSiblingIndex < NUM_TASKS; subtaskSiblingIndex++)
   {
-    if(subtaskSiblingIndex == subtask_temp->sub_task_num + 1)
+    if(coreArraySubtasks[subtask_temp->parent_index][subtaskSiblingIndex]->sub_task_num == subtask_temp->sub_task_num + 1)
     {
+      printk("Broke!");
+      nextSubtask = coreArraySubtasks[subtask_temp->parent_index][subtaskSiblingIndex];
       break;
     }
   }
-
-
+  */
   while(!kthread_should_stop()){
+    printk("Should not stop!");
     subtask_temp->last_release_time = ktime_get(); 
     subtask_func(subtask_temp); 
     //check if subtask is first of its task 

@@ -60,4 +60,6 @@ struct Task{
 
 static _task_t *taskStruct[NUM_TASKS];
 
+static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
+
  #endif
