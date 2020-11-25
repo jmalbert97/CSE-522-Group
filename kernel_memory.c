@@ -76,6 +76,7 @@ void setupThreads(void)
 
       kthread_bind(subTasks[y + x * NUM_SUBTASKS], tempSubtask->core);
       sched_setscheduler(subTasks[y + x * NUM_SUBTASKS], SCHED_FIFO, &tempSubtask->priority);
+      wake_up_process(subTasks[y + x * NUM_SUBTASKS]);
       y++; 
     }
   }
