@@ -62,12 +62,10 @@ struct Task{
 
 static _task_t *taskStruct[NUM_TASKS];
 
-<<<<<<< Updated upstream
-static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS];
-=======
+ static _subtask_t *coreArraySubtasks[4][NUM_TASKS*NUM_SUBTASKS]; 
+
 static _subtask_t * get_subtasks_from_tasks(int x){
   return taskStruct[x]->subtasks; 
 }
->>>>>>> Stashed changes
 
  #endif

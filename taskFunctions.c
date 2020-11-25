@@ -120,45 +120,6 @@ int run_thread_func(void *data){
   hrtimer_init(&(subtask_temp->timer), CLOCK_MONOTONIC, HRTIMER_MODE_ABS); 
   printk("timer init done.\n"); 
   subtask_temp->timer.function = timer_expiration_func; 
-<<<<<<< Updated upstream
-  set_current_state(TASK_INTERRUPTIBLE);
-  schedule(); 
-  
-  printk("inside run_thread_func for run mode..\n"); 
-
-  /*
-  for(subtaskSiblingIndex = 0; subtaskSiblingIndex < NUM_TASKS; subtaskSiblingIndex++)
-  {
-    if(coreArraySubtasks[subtask_temp->parent_index][subtaskSiblingIndex]->sub_task_num == subtask_temp->sub_task_num + 1)
-    {
-      printk("Broke!");
-      nextSubtask = coreArraySubtasks[subtask_temp->parent_index][subtaskSiblingIndex];
-      break;
-    }
-  }
-  */
-  while(!kthread_should_stop()){
-    printk("Should not stop!");
-    subtask_temp->last_release_time = ktime_get(); 
-    subtask_func(subtask_temp); 
-    //check if subtask is first of its task 
-    if(subtask_temp->sub_task_num == 0){
-      absolute_time = ktime_to_ms(subtask_temp->last_release_time) + subtask_temp-> task_period; 
-      //creat ktime interval for timer, 1000000 ns = 1ms 
-      timer_interval = ktime_set(0, absolute_time * 1000000);
-      hrtimer_start(&subtask_temp->timer, timer_interval, HRTIMER_MODE_ABS);
-    }else if(taskStruct[subtask_temp->parent_index]->num_subtasks != subtask_temp->sub_task_num){
-      ktime_t current_time = ktime_get();
-
-      if(ktime_to_ms(current_time) < (subtask_temp->task_period + ktime_to_ms(nextSubtask->last_release_time)))
-      {
-        timer_interval = ktime_set(0, (nextSubtask->task_period * 1000000) + ktime_to_ns(nextSubtask->last_release_time));
-        hrtimer_start(&nextSubtask->timer, timer_interval, HRTIMER_MODE_ABS);
-      }
-      else
-      {
-        wake_up_process(nextSubtask->task);
-=======
   printk("timer function set\n"); 
 
   while(!kthread_should_stop()){
@@ -174,7 +135,6 @@ int run_thread_func(void *data){
         // {
         //   break;
         // } 
->>>>>>> Stashed changes
       }
     }
     // list_for_each_entry(nextSubtask, &taskStruct[subtask_temp->parent_index]->subtasks->sibling, sibling)
